@@ -25,10 +25,6 @@ package
 			
 			// Create game
 			_game = new Game(stage);
-			
-			// Events
-			addEventListener(Event.ENTER_FRAME, _game.update);
-			stage.addEventListener(MouseEvent.MOUSE_UP, _game.onMouseUp);
 		}
 		
 	}

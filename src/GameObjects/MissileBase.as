@@ -34,11 +34,6 @@ package GameObjects
 			return _canShoot;
 		}
 		
-		public function get RocketSpawnPos():Vector3D
-		{
-			return new Vector3D(this.x + this.width / 2, this.y + this.height / 2);
-		}
-		
 		// -- Vars -- //
 		
 		private var _shootInterval:int = 500;
@@ -57,7 +52,7 @@ package GameObjects
 		public function MissileBase() 
 		{
 			// Add baseObject
-			_baseObj = new MissileLaunch();
+			_baseObj = new Art_MissileLaunch();
 			super();
 			
 			// Create shoot interval timer
@@ -67,6 +62,9 @@ package GameObjects
 				_shootTimer.stop();
 				_canShoot = true;
 			});
+			
+			// Set bounds
+			CollisionRange = 20;
 			
 			// Set default anim
 			_animState = "Idle";

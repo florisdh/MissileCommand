@@ -1,5 +1,4 @@
-package Waves 
-{
+package  {
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
@@ -51,20 +50,25 @@ package Waves
 			_spawnTimer.addEventListener(TimerEvent.TIMER, SpawnTimer_Tick);
 		}
 		
+		// Start or resume the wave
 		public function Start():void 
 		{
+			// Reset if not started
 			if (!_started) init();
 			
+			// Start timer for next Spawn
 			_spawnTimer.delay = _calcInterval();
 			_spawnTimer.start();
 		}
 		
+		// Pauze the wave
 		public function Pauze():void 
 		{
 			if (!_started) return;
 			_spawnTimer.stop();
 		}
 		
+		// Stop the wave
 		public function Stop():void 
 		{
 			if (!_started) return;
@@ -73,6 +77,7 @@ package Waves
 			_spawnTimer.stop();
 		}
 		
+		// Reset the wave
 		public function Reset():void
 		{
 			init();

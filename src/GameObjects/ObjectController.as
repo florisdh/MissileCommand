@@ -3,6 +3,7 @@ package GameObjects
 	import adobe.utils.CustomActions;
 	import flash.display.Stage;
 	import flash.events.Event;
+	import flash.geom.Vector3D;
 	import GameObjects.Events.ObjectEvent;
 	/**
 	 * ...
@@ -68,6 +69,23 @@ package GameObjects
 			for each (var c:GameObj in GameObjs)
 			{
 				c.update(e);
+			}
+			
+			// Check for collision between objects
+			for each (var c:GameObj in GameObjs)
+			for each (var o:GameObj in GameObjs)
+			{
+				// Skip self, dead or no colliding part
+				if (c == o || !c.IsAlive || !o.IsAlive || !c.Collide || !o.Collide) continue;
+				
+				// Calc distance
+				var dis:Number = Vector3D.distance(c.Position, o.Position);
+				
+				// Check if in bounds
+				if (dis < c.CollisionRange + o.CollisionRange)
+				{
+					c.onCollide(o);
+				}
 			}
 		}
 		

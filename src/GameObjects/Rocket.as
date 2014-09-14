@@ -4,6 +4,7 @@ package GameObjects
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.geom.Vector3D;
+	import GameObjects.Events.ObjectEvent;
 	
 	/**
 	 * ...
@@ -18,12 +19,15 @@ package GameObjects
 		// -- Properties -- //
 		
 		// Speed to move at
-		public var Speed:Number = 8;
+		public var Speed:Number = 6;
 		
-		// Velo of the rocket's engine
-		public var _thrustVelo:Vector3D;
+		// Minimal distance to have from spawn to explode when collide
+		public var MinExplodeDis:Number = 10;
 		
 		// -- Vars -- //
+		
+		// Velo of the rocket's engine
+		private var _thrustVelo:Vector3D;
 		
 		// Target to go to
 		private var _target:Vector3D;
@@ -37,7 +41,7 @@ package GameObjects
 		
 		public function Rocket() 
 		{
-			_baseObj = new Missile();
+			_baseObj = new Art_Missile();
 			_baseObj.rotation = -90;
 			_baseObj.scaleX = 0.5;
 			_baseObj.scaleY = 0.5;
@@ -53,15 +57,27 @@ package GameObjects
 			// Calculate current frame movement
 			_velo = _velo.add(_thrustVelo);
 			
-			// Add distance
+			// Set last distance
 			_lastDisToTarget = _disToTarget;
-			_disToTarget = _calcDisToTarget();
+			
+			// Calc new distance
+			_disToTarget = Vector3D.distance(new Vector3D(this.x, this.y), _target);
+			
+			// Check if in explode distance or passed target
 			if (_disToTarget > _lastDisToTarget || _disToTarget <= _explodeDistance)
 			{
-				Destroy();
+				Explode();
 			}
 			
 			super.update(e);
+		}
+		
+		override public function onCollide(other:GameObj):void 
+		{
+			if (Vector3D.distance(_basePos, other.Position) < MinExplodeDis) return;
+			
+			super.onCollide(other);
+			Explode();
 		}
 		
 		// -- Methods -- //
@@ -84,9 +100,10 @@ package GameObjects
 			return rv;
 		}
 		
-		private function _calcDisToTarget():Number
+		private function Explode():void 
 		{
-			return Vector3D.distance(new Vector3D(this.x, this.y), _target);
+			dispatchEvent(new ObjectEvent(Rocket.EXPLODE, this, new Vector3D(this.x, this.y)));
+			Destroy();
 		}
 	
 		public function set Target(newVal:Vector3D):void
