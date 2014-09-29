@@ -1,10 +1,11 @@
-package GameObjects 
+package GameObjects.Rockets
 {
 	import adobe.utils.CustomActions;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.geom.Vector3D;
 	import GameObjects.Events.ObjectEvent;
+	import GameObjects.GameObj;
 	
 	/**
 	 * ...
@@ -12,10 +13,6 @@ package GameObjects
 	 */
 	public class Rocket extends GameObj 
 	{
-		// -- EVENTS -- //
-		
-		public static const EXPLODE:String = "EXPLODE";
-		
 		// -- Properties -- //
 		
 		// Speed to move at
@@ -74,9 +71,10 @@ package GameObjects
 		
 		override public function onCollide(other:GameObj):void 
 		{
+			// Check if out of spawn range
 			if (Vector3D.distance(_basePos, other.Position) < MinExplodeDis) return;
 			
-			super.onCollide(other);
+			// Explode the rocket
 			Explode();
 		}
 		
@@ -100,24 +98,21 @@ package GameObjects
 			return rv;
 		}
 		
-		private function Explode():void 
-		{
-			dispatchEvent(new ObjectEvent(Rocket.EXPLODE, this, new Vector3D(this.x, this.y)));
-			Destroy();
-		}
-	
-		public function set Target(newVal:Vector3D):void
-		{
-			_target = newVal;
-			_thrustVelo = _calcMoveDir(Speed);
-			RotateToPoint(newVal);
-		}
-		
-		public function RotateToPoint(target:Vector3D):void 
+		private function _rotateToPoint(target:Vector3D):void 
 		{
 			var rad:Number = Math.atan2(_target.y - this.y, _target.x - this.x);
 			this.rotation = rad * 180 / Math.PI;
 		}
+		
+		// -- GetSet -- //
+		
+		public function set Target(newVal:Vector3D):void
+		{
+			_target = newVal;
+			_thrustVelo = _calcMoveDir(Speed);
+			_rotateToPoint(newVal);
+		}
+		
 	}
 
 }

@@ -1,6 +1,7 @@
 package GameObjects 
 {
 	import adobe.utils.CustomActions;
+	import Factories.RocketFactory;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
 	import flash.geom.Vector3D;
@@ -18,21 +19,7 @@ package GameObjects
 		
 		// -- Properties -- //
 		
-		// Interval between shots
-		public function set ShootInterval(millisec:int):void
-		{
-			_shootInterval = millisec;
-			_shootTimer.delay = millisec;
-		}
-		public function get ShootInterval():int
-		{
-			return _shootInterval;
-		}
-		
-		public function get CanShoot():Boolean 
-		{
-			return _canShoot;
-		}
+		public var RocketType:uint = RocketFactory.ROCKET_FAST;
 		
 		// -- Vars -- //
 		
@@ -96,7 +83,16 @@ package GameObjects
 			super.update(e);
 		}
 		
-		// -- Methods -- //
+		override public function onCollide(other:GameObj):void 
+		{
+			if (other is Explosion)
+			{
+				Explode();
+				Destroy();
+			}
+		}
+		
+		// -- PublicMethods -- //
 		
 		public function ShootMissile(target:Vector3D):void 
 		{
@@ -130,6 +126,24 @@ package GameObjects
 				_animDone = false;
 			}
 		}
+		
+		// -- GetSet -- //
+		
+		public function set ShootInterval(millisec:int):void
+		{
+			_shootInterval = millisec;
+			_shootTimer.delay = millisec;
+		}
+		public function get ShootInterval():int
+		{
+			return _shootInterval;
+		}
+		
+		public function get CanShoot():Boolean 
+		{
+			return _canShoot;
+		}
+		
 		
 	}
 

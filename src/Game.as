@@ -1,19 +1,11 @@
 package  
 {
-	import adobe.utils.CustomActions;
-	import flash.display.MovieClip;
-	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Vector3D;
-	import GameObjects.Events.ObjectEvent;
-	import GameObjects.Explosion;
-	import GameObjects.GameObj;
-	import GameObjects.MissileBase;
-	import GameObjects.ObjectController;
-	import GameObjects.Rocket;
-	import Wave;
+	import Factories.*;
+	import GameObjects.*;
 	
 	/**
 	 * ...
@@ -25,18 +17,19 @@ package
 		
 		private var _stage:Stage;
 		
+		// Settings, loaded from file, contains ShootInterval, etc
+		private var _settings:Settings;
+		
 		// Controller of rockets + missileBases (Updating and destroying)
-		private var _objController:ObjectController;
+		private var _engine:Engine;
 		
-		// Player rocket spawns
-		private var _missileSpawns:Vector.<MissileBase>;
-		
-		//
-		private var _enemyRocketSpeed:Number = 5;
+		// Factories
+		private var _rocketFactory:RocketFactory;
+		private var _basesFactory:MissileBaseFactory;
 		
 		// Levels
 		private var _levels:Vector.<Level>;
-		private var _currentLevel:int = -1;
+		private var _currentLevel:int;
 		
 		// -- Construct + init -- //
 		
@@ -44,8 +37,14 @@ package
 		{
 			_stage = s;
 			
+			// Load settings
+			_settings = new Settings();
+			
 			// Controller of all objects
-			_objController = new ObjectController(s);
+			_engine = new Engine(s);
+			
+			// Create rocket factory
+			_rocketFactory = new RocketFactory(_engine);
 			
 			// Add Road
 			var road:BG_Road = new BG_Road();
@@ -69,27 +68,11 @@ package
 		
 		private function initMissileSpawns():void 
 		{
-			_missileSpawns = new Vector.<MissileBase>();
+			_basesFactory = new MissileBaseFactory(_rocketFactory);
 			
-			var missileSpawn1:MissileBase = new MissileBase();
-			missileSpawn1.x = 40;
-			missileSpawn1.y = 550;
-			missileSpawn1.addEventListener(MissileBase.SHOOT, onPlayerShoot);
-			_objController.AddObject(missileSpawn1);
-			
-			var missileSpawn2:MissileBase = new MissileBase();
-			missileSpawn2.x = 350;
-			missileSpawn2.y = 545;
-			missileSpawn2.addEventListener(MissileBase.SHOOT, onPlayerShoot);
-			_objController.AddObject(missileSpawn2);
-			
-			var missileSpawn3:MissileBase = new MissileBase();
-			missileSpawn3.x = 670;
-			missileSpawn3.y = 550;
-			missileSpawn3.addEventListener(MissileBase.SHOOT, onPlayerShoot);
-			_objController.AddObject(missileSpawn3);
-			
-			_missileSpawns.push(missileSpawn1, missileSpawn2, missileSpawn3);
+			_basesFactory.AddBase(40, 550);
+			_basesFactory.AddBase(350, 545);
+			_basesFactory.AddBase(670, 550);
 		}
 		
 		private function initLevels():void 
@@ -98,17 +81,33 @@ package
 			_levels = new Vector.<Level>();
 			
 			var level01:Level = new Level(onLevelDone, EnemyShoot);
-			level01.AddWave(1000, 10);
-			level01.AddWave(900, 10);
-			level01.AddWave(800, 10);
+			level01.AddWave(600, 15);
+			level01.AddWave(500, 15);
+			level01.AddWave(400, 15);
 			
 			var level02:Level = new Level(onLevelDone, EnemyShoot);
-			level02.AddWave(1000, 10);
-			level02.AddWave(900, 10);
-			level02.AddWave(800, 10);
+			level02.AddWave(400, 15);
+			level02.AddWave(300, 15);
+			level02.AddWave(200, 15);
+			
+			var level03:Level = new Level(onLevelDone, EnemyShoot);
+			level03.AddWave(200, 15);
+			level03.AddWave(100, 15);
+			level03.AddWave(50, 15);
+			
+			var level04:Level = new Level(onLevelDone, EnemyShoot);
+			level04.AddWave(100, 20);
+			level04.AddWave(50, 20);
+			level04.AddWave(40, 10);
+			
+			var level05:Level = new Level(onLevelDone, EnemyShoot);
+			level05.AddWave(30, 25);
+			level05.AddWave(25, 25);
+			level05.AddWave(20, 50);
+			level05.AddWave(20, 200);
 			
 			// Add to array
-			_levels.push(level01, level02);
+			_levels.push(level01, level02, level03, level04, level05);
 		}
 		
 		// -- EventCalls -- //
@@ -116,36 +115,18 @@ package
 		public function update(e:Event):void 
 		{
 			// Update GameObjects
-			_objController.update(e);
+			_engine.update(e);
 		}
 		
 		public function onMouseUp(e:MouseEvent):void
 		{
 			var targetPos:Vector3D = new Vector3D(e.stageX, e.stageY);
 			
-			var closestBase:MissileBase;
-			var closestDistance:Number = -1;
-			
-			// Calculate closest missile spawn
-			for each (var c:MissileBase in _missileSpawns)
-			{
-				var cDis:Number = Vector3D.distance(c.Position, targetPos);
-				if (cDis < closestDistance || closestDistance < 0)
-				{
-					closestBase = c;
-					closestDistance = cDis;
-				}
-			}
+			// Get closest base
+			var closestBase:MissileBase = _basesFactory.GetClosestBase(targetPos);
 			
 			// Shoot
-			closestBase.ShootMissile(targetPos);
-		}
-		
-		private function onPlayerShoot(e:ObjectEvent):void 
-		{
-			if (!e.GameObject is MissileBase) return;
-			var base:MissileBase = e.GameObject as MissileBase;
-			ShootMissile(base.Position, e.Target);
+			if (closestBase) closestBase.ShootMissile(targetPos);
 		}
 		
 		private function onLevelDone():void 
@@ -159,13 +140,13 @@ package
 			var spawnPos:Vector3D = new Vector3D(Math.random() * _stage.stageWidth);
 			
 			// Select random base
-			var rndBaseIndex:int = Math.ceil(Math.random() * _missileSpawns.length - 1);
-			var target:MissileBase = _missileSpawns[rndBaseIndex];
-			// Add some offset to the bases
+			var target:MissileBase = _basesFactory.GetRandomBase();
+			
+			// Add some offset to the target location
 			var targetPos:Vector3D = target.Position.add(new Vector3D(-target.width + Math.random() * (target.width * 2)));
 			
 			// Shoot
-			ShootMissile(spawnPos, targetPos, _enemyRocketSpeed);
+			_rocketFactory.AddRocket(spawnPos, targetPos, RocketFactory.ROCKET_SLOW);
 		}
 		
 		private function NextLevel():void 
@@ -192,22 +173,6 @@ package
 			_levels[_currentLevel].Start();
 		}
 		
-		private function ShootMissile(start:Vector3D, target:Vector3D, speed:Number = 8):void 
-		{
-			var rocket:Rocket = new Rocket();
-			rocket.Position = start;
-			rocket.Speed = speed;
-			rocket.Target = target;
-			rocket.addEventListener(Rocket.EXPLODE, onRocketExplode);
-			_objController.AddObject(rocket);
-		}
-		
-		private function onRocketExplode(e:ObjectEvent):void 
-		{
-			var explosion:Explosion = new Explosion();
-			explosion.Position = e.Target;
-			_objController.AddObject(explosion);
-		}
 	}
 
 }

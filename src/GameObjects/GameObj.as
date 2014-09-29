@@ -13,8 +13,9 @@ package GameObjects
 	 */
 	public class GameObj extends Sprite 
 	{
-		// Event types
+		// -- Events -- //
 		public static const DESTROY:String = "DESTROY";
+		public static const EXPLODE:String = "EXPLODE";
 		
 		// -- Properties -- //
 		
@@ -25,20 +26,8 @@ package GameObjects
 		public var Collide:Boolean = true;
 		public var CollisionRange:Number = 10;
 		
-		// If to draw the collision bounds
+		// If to draw the collision bounds (for debugging)
 		public var ShowCollisionRange:Boolean = false;
-		
-		// Easy fix for position
-		public function get Position():Vector3D
-		{
-			return new Vector3D(x, y);
-		}
-		public function set Position(pos:Vector3D):void
-		{
-			this.x = pos.x;
-			this.y = pos.y;
-			_basePos = pos;
-		}
 		
 		// -- Vars -- //
 		
@@ -51,6 +40,8 @@ package GameObjects
 		// Forces
 		protected var _velo:Vector3D = new Vector3D();
 		
+		// -- Construct -- //
+		
 		public function GameObj() 
 		{
 			if (_baseObj) addChild(_baseObj);
@@ -58,6 +49,8 @@ package GameObjects
 			// Set line style for collision range drawing
 			graphics.lineStyle(2, 0xFF0000);
 		}
+		
+		// -- PublicMethods -- //
 		
 		public function update(e:Event):void 
 		{
@@ -83,8 +76,28 @@ package GameObjects
 		{
 			if (!IsAlive) return;
 			IsAlive = false;
-			dispatchEvent(new ObjectEvent(GameObj.DESTROY, this));
+			dispatchEvent(new ObjectEvent(DESTROY, this));
 		}
+		
+		public function Explode():void 
+		{
+			dispatchEvent(new ObjectEvent(EXPLODE, this, Position));
+			Destroy();
+		}
+		
+		// -- GetSet -- //
+		
+		public function get Position():Vector3D
+		{
+			return new Vector3D(x, y);
+		}
+		public function set Position(pos:Vector3D):void
+		{
+			this.x = pos.x;
+			this.y = pos.y;
+			_basePos = pos;
+		}
+		
 	}
 
 }

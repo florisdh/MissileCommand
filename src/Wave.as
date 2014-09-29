@@ -3,7 +3,7 @@ package  {
 	import flash.events.Event;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
-	import GameObjects.Rocket;
+	import GameObjects.Rockets.Rocket;
 	/**
 	 * ...
 	 * @author FDH
@@ -17,7 +17,7 @@ package  {
 		// -- Properties -- //
 		
 		public var SpawnInterval:int;
-		public var SpawnIntervalFluctuation:int;
+		public var SpawnIntervalFluctuation:int = 800;
 		
 		public var Amount:int;
 		
@@ -29,7 +29,6 @@ package  {
 		// -- Vars -- //
 		
 		private var _started:Boolean = false;
-		
 		private var _currentAmount:int = 0;
 		private var _spawnTimer:Timer;
 		
@@ -103,7 +102,8 @@ package  {
 		
 		private function _calcInterval():int
 		{
-			return SpawnInterval + (Math.random() * SpawnIntervalFluctuation * 2 - SpawnIntervalFluctuation);
+			//return SpawnInterval + (Math.random() * SpawnIntervalFluctuation * 2 - SpawnIntervalFluctuation);
+			return SpawnInterval + Math.random() * SpawnIntervalFluctuation;
 		}
 	}
 

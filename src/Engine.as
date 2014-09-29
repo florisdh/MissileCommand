@@ -1,15 +1,17 @@
-package GameObjects 
+package
 {
 	import adobe.utils.CustomActions;
 	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.geom.Vector3D;
 	import GameObjects.Events.ObjectEvent;
+	import GameObjects.Explosion;
+	import GameObjects.GameObj;
 	/**
 	 * ...
 	 * @author FDH
 	 */
-	public class ObjectController 
+	public class Engine 
 	{
 		// All objects in the game
 		public var GameObjs:Vector.<GameObj> = new Vector.<GameObj>();
@@ -17,7 +19,7 @@ package GameObjects
 		// Stage of the game
 		private var _stage:Stage;
 		
-		public function ObjectController(stage:Stage)
+		public function Engine(stage:Stage)
 		{
 			_stage = stage;
 		}
@@ -32,6 +34,7 @@ package GameObjects
 			
 			// Add event listeners
 			obj.addEventListener(GameObj.DESTROY, onObjectDestroy);
+			obj.addEventListener(GameObj.EXPLODE, onObjectExplode);
 		}
 		
 		public function AddObjects(objs:Vector.<GameObj>):void 
@@ -89,9 +92,16 @@ package GameObjects
 			}
 		}
 		
-		private function onObjectDestroy(ev:ObjectEvent):void 
+		private function onObjectDestroy(e:ObjectEvent):void 
 		{
-			RemoveObject(ev.GameObject);
+			RemoveObject(e.GameObject);
+		}
+		
+		private function onObjectExplode(e:ObjectEvent):void 
+		{
+			var explosion:Explosion = new Explosion();
+			explosion.Position = e.Target;
+			AddObject(explosion);
 		}
 	}
 
