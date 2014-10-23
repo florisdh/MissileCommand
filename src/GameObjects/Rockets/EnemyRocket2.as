@@ -12,7 +12,7 @@ package GameObjects.Rockets
 			super();
 			Speed = 5;
 			Scale = 0.6;
-			ExplosionType = 2;
+			ExplosionType = 3;
 		}
 		
 	}

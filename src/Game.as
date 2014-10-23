@@ -6,10 +6,13 @@ package
 	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.events.TimerEvent;
 	import flash.geom.Vector3D;
 	import Factories.*;
 	import flash.text.TextField;
+	import flash.utils.Timer;
 	import GameObjects.*;
+	import GameObjects.Cars.Car;
 	import GameObjects.Rockets.Rocket;
 	import UI.Controls.Label;
 	
@@ -19,6 +22,16 @@ package
 	 */
 	public class Game extends Sprite
 	{
+		// -- Events -- //
+		
+		public static const GAMEOVER:String = "GAMEOVER";
+		public static const WON:String = "WON";
+		
+		// -- SCORE -- //
+		
+		public static var HIGHSCORE:int = 0;
+		public static var SCORE:int = 0;
+		
 		// -- Vars -- //
 		
 		// Status
@@ -49,21 +62,18 @@ package
 		// Rocket type of enemy
 		private var _enemyRocketType:int;
 		
+		// Spawn timer here <- todo: create own class
+		private var _carSpawnTimer:Timer;
+		
 		// -- Construct + init -- //
 		
 		public function Game() 
 		{
-			// -- Car
-			//var newCar:Car = new Car();
-			//newCar.x = 10;
-			//newCar.scaleX = newCar.scaleY = 0.6;
-			//newCar.y = road.y + 25;
-			//_engine.AddObject(newCar);
 		}
 		
 		private function init():void 
 		{
-			_enemyRocketType = RocketFactory.ROCKET_SLOW;
+			_enemyRocketType = RocketFactory.ROCKET_ENEMY1;
 			
 			// Controller of all objects
 			_engine = new Engine(stage);
@@ -87,6 +97,11 @@ package
 			_levelIndicator.y = stage.stageHeight / 2;
 			_levelIndicator.TextSize = 4;
 			stage.addChild(_levelIndicator);
+			
+			// SPawning carz
+			_carSpawnTimer = new Timer(4000);
+			_carSpawnTimer.addEventListener(TimerEvent.TIMER, onCarSpawn);
+			_carSpawnTimer.start();
 			
 			// Add event listeners
 			stage.addEventListener(Event.ENTER_FRAME, update);
@@ -150,6 +165,12 @@ package
 			
 			// Update GameObjects
 			_engine.update(e);
+			
+			if (_missileController.BaseAmount == 0)
+			{
+				dispatchEvent(new Event(GAMEOVER));
+				Pause();
+			}
 		}
 		
 		public function onMouseUp(e:MouseEvent):void
@@ -167,24 +188,37 @@ package
 		
 		private function onLevelDone():void 
 		{
+			// Change rocket type when higher level
 			switch (_currentLevel) 
 			{
 				case 1:
-					//_enemyRocketType = 
-				break;
-				case 2:
-					
+					_enemyRocketType = RocketFactory.ROCKET_ENEMY2;
 				break;
 				case 3:
-					
-				break;
-				case 4:
-					
+					_enemyRocketType = RocketFactory.ROCKET_ENEMY3;
 				break;
 				default:
 			}
 			
 			NextLevel();
+			
+			// Spawn a car
+			spawnCar(10, 1);
+		}
+		
+		private function onCarSpawn(e:Event):void 
+		{
+			var spawnPoint:int = Math.random() * 2;
+			switch (spawnPoint) 
+			{
+				case 0:
+					spawnCar(0, 1);
+				break;
+				case 1:
+					spawnCar(stage.stageWidth, -1);
+				break;
+				default:
+			}
 		}
 		
 		private function EnemyShoot():void
@@ -218,7 +252,7 @@ package
 			if (_paused) return;
 			_paused = true;
 			
-			_levels[_currentLevel].Pause();
+			if (_currentLevel < _levels.length) _levels[_currentLevel].Pause();
 		}
 		
 		public function Resume():void 
@@ -226,7 +260,7 @@ package
 			if (!_paused) return;
 			_paused = false;
 			
-			_levels[_currentLevel].Resume();
+			if (_currentLevel < _levels.length) _levels[_currentLevel].Resume();
 		}
 		
 		public function Stop():void 
@@ -236,7 +270,7 @@ package
 			_paused = false;
 			
 			// Stop Level
-			_levels[_currentLevel].Stop();
+			if (_currentLevel < _levels.length) _levels[_currentLevel].Stop();
 			
 			// Remove all items
 			_engine.Destroy();
@@ -263,7 +297,8 @@ package
 			// Check if done
 			if (_currentLevel >= _levels.length)
 			{
-				showText("-> All Levels done <-");
+				dispatchEvent(new Event(WON));
+				Stop();
 				return;
 			}
 			
@@ -278,6 +313,15 @@ package
 		{
 			_levelIndicator.Text = text;
 			_levelIndicator.fadeOut(50, 0.0175);
+		}
+		
+		private function spawnCar(x:int, dir:int):void 
+		{
+			var newCar:Car = _carFactory.create(0, _engine) as Car;
+			newCar.x = x;
+			newCar.scaleX = newCar.scaleY = 0.6;
+			newCar.y = _road.y + 25;
+			newCar.Speed *= dir;
 		}
 		
 		// -- Get&Set -- //

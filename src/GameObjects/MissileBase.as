@@ -19,7 +19,7 @@ package GameObjects
 		
 		// -- Properties -- //
 		
-		public var RocketType:uint = RocketFactory.ROCKET_FAST;
+		public var RocketType:uint = RocketFactory.ROCKET_PLAYER;
 		
 		// -- Vars -- //
 		

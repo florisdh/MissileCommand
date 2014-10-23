@@ -6,6 +6,8 @@ package
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
+	import UI.Menus.GameOverMenu;
+	import UI.Menus.GameWonMenu;
 	import UI.Menus.Menu;
 	import UI.Menus.PauseMenu;
 	import UI.Menus.StartMenu;
@@ -41,6 +43,8 @@ package
 			
 			// Create game
 			_game = new Game();
+			_game.addEventListener(Game.GAMEOVER, onPlayerDied);
+			_game.addEventListener(Game.WON, onPlayerWin);
 			addChild(_game);
 			
 			// Show start menu
@@ -59,6 +63,16 @@ package
 				if (_game.Paused) resumeGame();
 				else pauseGame();
 			}
+		}
+		
+		private function onPlayerDied(e:Event):void 
+		{
+			showGameOverMenu();
+		}
+		
+		private function onPlayerWin(e:Event):void 
+		{
+			showWinMenu();
 		}
 		
 		// -- Methods -- //
@@ -88,11 +102,15 @@ package
 		private function stopGame(e:Event = null):void 
 		{
 			_game.Stop();
-			//removeChild(_game);
-			//_game = null;
-			//_game = new Game();
-			//addChild(_game);
 			showStartMenu();
+			stage.focus = null;
+		}
+		
+		private function restart(e:Event = null):void 
+		{
+			hideMenu();
+			_game.Stop();
+			_game.Start();
 			stage.focus = null;
 		}
 		
@@ -117,6 +135,28 @@ package
 			_menu = new PauseMenu();
 			_menu.addEventListener(PauseMenu.RESUME, resumeGame);
 			_menu.addEventListener(PauseMenu.QUIT, stopGame);
+			stage.addChildAt(_menu, stage.numChildren);
+		}
+		
+		private function showGameOverMenu():void 
+		{
+			// Hide last menu
+			hideMenu();
+			
+			_menu = new GameOverMenu();
+			_menu.addEventListener(GameOverMenu.RETRY, restart);
+			_menu.addEventListener(GameOverMenu.EXIT, stopGame);
+			stage.addChildAt(_menu, stage.numChildren);
+		}
+		
+		private function showWinMenu():void 
+		{
+			// Hide last menu
+			hideMenu();
+			
+			_menu = new GameWonMenu();
+			_menu.addEventListener(GameWonMenu.RETRY, restart);
+			_menu.addEventListener(GameWonMenu.EXIT, stopGame);
 			stage.addChildAt(_menu, stage.numChildren);
 		}
 		

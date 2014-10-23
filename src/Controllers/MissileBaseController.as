@@ -96,6 +96,13 @@ package Controllers
 			newRocket.Target = e.Target;
 		}
 		
+		// -- Get&Set -- //
+		
+		public function get BaseAmount():int
+		{
+			return _missileBases.length;
+		}
+		
 	}
 
 }

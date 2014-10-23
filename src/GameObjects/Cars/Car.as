@@ -18,6 +18,8 @@ package GameObjects.Cars {
 		public function Car() 
 		{
 			super();
+			WillExplode = false;
+			Collide = false;
 		}
 		
 		// -- Overrides -- //
