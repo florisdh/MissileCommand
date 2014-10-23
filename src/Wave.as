@@ -21,15 +21,15 @@ package  {
 		
 		public var Amount:int;
 		
-		public function get Started():Boolean
-		{
-			return _started;
-		}
-		
 		// -- Vars -- //
 		
 		private var _started:Boolean = false;
-		private var _currentAmount:int = 0;
+		private var _paused:Boolean = false;
+		
+		// Time left in the timer before pause
+		private var _lastTimerTime:int = -1;
+		
+		private var _currentAmount:int;
 		private var _spawnTimer:Timer;
 		
 		public function Wave(interval:int, amount:int, onDone:Function, onShoot:Function)
@@ -42,69 +42,91 @@ package  {
 		
 		private function init():void
 		{
-			_started = false;
-			_currentAmount = 0;
-			
+			_currentAmount = -1;
 			_spawnTimer = new Timer(0);
 			_spawnTimer.addEventListener(TimerEvent.TIMER, SpawnTimer_Tick);
 		}
 		
-		// Start or resume the wave
-		public function Start():void 
+		// -- Event Callbacks -- //
+		
+		private function SpawnTimer_Tick(e:Event):void 
 		{
-			// Reset if not started
-			if (!_started) init();
-			
-			// Start timer for next Spawn
-			_spawnTimer.delay = _calcInterval();
-			_spawnTimer.start();
+			NextSpawn();
 		}
 		
-		// Pauze the wave
-		public function Pauze():void 
+		// -- Methods -- //
+		
+		public function Start():void 
 		{
-			if (!_started) return;
+			if (_started) return;
+			_started = true;
+			
+			// Reset Vars
+			init()
+			
+			// Start timer for next Spawn
+			RestartTimer();
+		}
+		
+		public function Resume():void 
+		{
+			if (!_started || !_paused) return;
+			_paused = false;
+			
+			RestartTimer();
+		}
+		
+		public function Pause():void 
+		{
+			if (!_started || _paused) return;
+			_paused = true;
+			
 			_spawnTimer.stop();
 		}
 		
-		// Stop the wave
 		public function Stop():void 
 		{
 			if (!_started) return;
 			_started = false;
-			
+			_paused = false;
 			_spawnTimer.stop();
 		}
 		
-		// Reset the wave
-		public function Reset():void
+		public function NextSpawn():void 
 		{
-			init();
-		}
-		
-		private function SpawnTimer_Tick(e:Event):void 
-		{
+			_currentAmount++;
+			
 			// If done
 			if (_currentAmount >= Amount)
 			{
 				OnDone();
-				_spawnTimer.stop();
+				Stop();
 				return;
 			}
-			_currentAmount++;
 			
-			// Restart timer
-			_spawnTimer.delay = _calcInterval();
+			RestartTimer();
 			
 			// Shoot missile
 			OnShoot();
 		}
 		
-		private function _calcInterval():int
+		private function RestartTimer():void
 		{
-			//return SpawnInterval + (Math.random() * SpawnIntervalFluctuation * 2 - SpawnIntervalFluctuation);
-			return SpawnInterval + Math.random() * SpawnIntervalFluctuation;
+			_spawnTimer.delay = SpawnInterval + Math.random() * SpawnIntervalFluctuation;
+			if (!_spawnTimer.running) _spawnTimer.start();
 		}
+		
+		// -- Get&Set -- //
+		
+		public function get Started():Boolean
+		{
+			return _started;
+		}
+		public function get Paused():Boolean
+		{
+			return _paused;
+		}
+		
 	}
 
 }

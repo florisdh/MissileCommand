@@ -1,37 +1,37 @@
-package Factories 
+package Controllers 
 {
+	import Factories.RocketFactory;
 	import flash.geom.Vector3D;
 	import GameObjects.Events.ObjectEvent;
 	import GameObjects.GameObj;
 	import GameObjects.MissileBase;
+	import GameObjects.Rockets.Rocket;
 	/**
 	 * ...
 	 * @author FDH
 	 */
-	public class MissileBaseFactory extends Factory 
+	public class MissileBaseController 
 	{
 		// -- Properties -- //
 		
 		// -- Vars -- //
 		
-		// Player rocket spawns
 		private var _missileBases:Vector.<MissileBase>;
-		
-		//
-		private var _missileFactory:RocketFactory;
+		private var _rocketFactory:RocketFactory;
+		private var _engine:Engine;
 		
 		// -- Construct -- //
 		
-		public function MissileBaseFactory(missileFactory:RocketFactory) 
+		public function MissileBaseController(engine:Engine, rocketFactory:RocketFactory) 
 		{
-			_missileFactory = missileFactory;
-			super(_missileFactory.TargetEngine);
 			_missileBases = new Vector.<MissileBase>();
+			_rocketFactory = rocketFactory;
+			_engine = engine;
 		}
 		
 		// -- PublicMethods -- //
 		
-		public function AddBase(x:int, y:int):void 
+		public function addBase(x:int, y:int):void 
 		{
 			// Create base
 			var missileSpawn:MissileBase = new MissileBase();
@@ -46,10 +46,10 @@ package Factories
 			
 			// Add to array & engine
 			_missileBases.push(missileSpawn);
-			TargetEngine.AddObject(missileSpawn);
+			_engine.AddObject(missileSpawn);
 		}
 		
-		public function GetClosestBase(pos:Vector3D):MissileBase 
+		public function getClosestBase(pos:Vector3D):MissileBase 
 		{
 			var closestBase:MissileBase;
 			var closestDistance:Number = -1;
@@ -71,9 +71,12 @@ package Factories
 			return closestBase;
 		}
 		
-		public function GetRandomBase():MissileBase
+		public function getRandomBase():MissileBase
 		{
-			var rndBaseIndex:int = Math.floor(Math.random() * _missileBases.length);
+			var baseAmount:int = _missileBases.length;
+			if (baseAmount == 0) return null;
+			
+			var rndBaseIndex:int = Math.floor(Math.random() * baseAmount);
 			return _missileBases[rndBaseIndex];
 		}
 		
@@ -88,7 +91,9 @@ package Factories
 		private function onBaseShoot(e:ObjectEvent):void 
 		{
 			var base:MissileBase = e.GameObject as MissileBase;
-			_missileFactory.AddRocket(base.Position, e.Target, base.RocketType);
+			var newRocket:Rocket = _rocketFactory.create(base.RocketType, _engine) as Rocket;
+			newRocket.Position = base.Position;
+			newRocket.Target = e.Target;
 		}
 		
 	}

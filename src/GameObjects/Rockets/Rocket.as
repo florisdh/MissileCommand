@@ -24,15 +24,15 @@ package GameObjects.Rockets
 		// -- Vars -- //
 		
 		// Velo of the rocket's engine
-		private var _thrustVelo:Vector3D;
+		protected var _thrustVelo:Vector3D;
 		
 		// Target to go to
-		private var _target:Vector3D;
+		protected var _target:Vector3D;
 		
 		// Distance to target
-		private var _explodeDistance:Number = 15;
-		private var _disToTarget:Number;
-		private var _lastDisToTarget:Number;
+		protected var _explodeDistance:Number = 15;
+		protected var _disToTarget:Number;
+		protected var _lastDisToTarget:Number;
 
 		// -- Construct -- //
 		
@@ -40,8 +40,7 @@ package GameObjects.Rockets
 		{
 			_baseObj = new Art_Missile();
 			_baseObj.rotation = -90;
-			_baseObj.scaleX = 0.5;
-			_baseObj.scaleY = 0.5;
+			Scale = 1;
 			super();
 		}
 		
@@ -74,7 +73,7 @@ package GameObjects.Rockets
 			// Check if out of spawn range
 			if (Vector3D.distance(_basePos, other.Position) < MinExplodeDis) return;
 			
-			// Explode the rocket
+			//super.onCollide(other);
 			Explode();
 		}
 		

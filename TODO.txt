@@ -1,12 +1,24 @@
 
-- Multiple rocket spawn
+## DOING ##
+
+- Sounds
+- ControlScreen
+- Cars
+
+## TODO ##
+
+- wave has rocketType
+
+- Score
+
+- Smoke behind missiles
 
 - Planes
-- Multiple Rockets types (explosion size, color overlay)
 - Pickups (rockets)
 
-- Level indication
-
 - Multiple kill score bonus
-- Score
-- Smoke behind missiles
+
+
+## BUGS ##
+- 	Pause button will restart the wave timer.
+	When spamming pause the timer will never reach its interval.

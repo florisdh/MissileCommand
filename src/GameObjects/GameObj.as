@@ -26,6 +26,10 @@ package GameObjects
 		public var Collide:Boolean = true;
 		public var CollisionRange:Number = 10;
 		
+		// Explosion
+		public var WillExplode:Boolean = true;
+		public var ExplosionType:Number = 1;
+		
 		// If to draw the collision bounds (for debugging)
 		public var ShowCollisionRange:Boolean = false;
 		
@@ -70,6 +74,10 @@ package GameObjects
 		
 		public function onCollide(other:GameObj):void 
 		{
+			if (WillExplode)
+			{
+				Explode();
+			}
 		}
 		
 		public function Destroy():void 
@@ -81,6 +89,7 @@ package GameObjects
 		
 		public function Explode():void 
 		{
+			if (!IsAlive) return;
 			dispatchEvent(new ObjectEvent(EXPLODE, this, Position));
 			Destroy();
 		}
@@ -91,11 +100,17 @@ package GameObjects
 		{
 			return new Vector3D(x, y);
 		}
+		
 		public function set Position(pos:Vector3D):void
 		{
 			this.x = pos.x;
 			this.y = pos.y;
 			_basePos = pos;
+		}
+		
+		public function set Scale(newScale:Number):void 
+		{
+			scaleX = scaleY = newScale;
 		}
 		
 	}

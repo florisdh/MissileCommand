@@ -1,6 +1,8 @@
 package
 {
 	import adobe.utils.CustomActions;
+	import Factories.ExplosionFactory;
+	import Factories.Factory;
 	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.geom.Vector3D;
@@ -19,9 +21,16 @@ package
 		// Stage of the game
 		private var _stage:Stage;
 		
+		private var _explosionFactory:Factory;
+		
+		// State
+		private var _started:Boolean = false;
+		
 		public function Engine(stage:Stage)
 		{
 			_stage = stage;
+			_started = true;
+			_explosionFactory = new ExplosionFactory();
 		}
 		
 		public function AddObject(obj:GameObj):void 
@@ -50,24 +59,33 @@ package
 			// Get array index
 			var index:int = GameObjs.indexOf(obj);
 			
+			RemoveObjectFromInd(index);
+			
+			// Remove from RAM
+			obj = null;
+		}
+		
+		public function RemoveObjectFromInd(index:int):void 
+		{
 			// Check if in array
 			if (index < 0) return;
+			
+			var obj:GameObj = GameObjs[index];
 			
 			// Remove event listeners
 			obj.removeEventListener(GameObj.DESTROY, onObjectDestroy);
 			
-			// Remove from array
-			GameObjs.splice(index, 1);
-			
 			// Remove from stage
 			_stage.removeChild(obj);
 			
-			// Remove from ram
-			obj = null;
+			// Remove from array
+			GameObjs.splice(index, 1);
 		}
 		
 		public function update(e:Event):void 
 		{
+			if (!_started) return;
+			
 			// Update all objects
 			for each (var c:GameObj in GameObjs)
 			{
@@ -92,6 +110,15 @@ package
 			}
 		}
 		
+		public function Destroy():void 
+		{
+			_started = false;
+			for (var i:int = GameObjs.length - 1; i >= 0; i-- )
+			{
+				RemoveObjectFromInd(i);
+			}
+		}
+		
 		private function onObjectDestroy(e:ObjectEvent):void 
 		{
 			RemoveObject(e.GameObject);
@@ -99,9 +126,8 @@ package
 		
 		private function onObjectExplode(e:ObjectEvent):void 
 		{
-			var explosion:Explosion = new Explosion();
+			var explosion:Explosion = _explosionFactory.create(e.GameObject.ExplosionType, this) as Explosion;
 			explosion.Position = e.Target;
-			AddObject(explosion);
 		}
 	}
 

@@ -85,11 +85,9 @@ package GameObjects
 		
 		override public function onCollide(other:GameObj):void 
 		{
-			if (other is Explosion)
-			{
-				Explode();
-				Destroy();
-			}
+			if (!(other is Explosion)) return;
+			
+			super.onCollide(other);
 		}
 		
 		// -- PublicMethods -- //
